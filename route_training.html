@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test image overlays</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+        <script src="route_data.js"></script>
+        <script src="routes.js"></script>
+        <link href="routes.css"  rel="stylesheet" type="text/css" media="all"/>
+    </head>
+
+    <body>
+        <div id="content">
+            <div class="routeMap">
+                <div id="pano1" class="target" data-key="pano1.jpg">
+                    <img src="pano1.jpg">
+                </div>
+            </div>
+            <div class="routeMap">
+                <div id="pano2" class="target" data-key="pano2.jpg">
+                    <img src="pano2.jpg">
+                </div>
+            </div>
+            <div class="routeMap">
+                <div id="pano3" class="target" data-key="pano3.jpg">
+                    <img src="pano3.jpg">
+                </div>
+            </div>
+
+            <div>
+                <h3>Current Route</h3>
+                <input type="button" id="reset" value="Reset Route" onclick="resetRoutes()"/>
+                <pre id="currentRouteJSON"></pre>
+            </div>
+        </div>
+
+
+        <script>
+document.addEventListener("DOMContentLoaded", () => {
+    // Load pre-defined routes
+    document.querySelectorAll(".routeMap").forEach( (map) => {
+        target = map.querySelector(".target");
+        key = target.getAttribute("data-key");
+        loadRoutes(target, key, routes[key]);
+        addLegend(map, routes[key]);
+    });
+//    var target = document.querySelector("#pano1");
+    //loadRoutes(target, routes["pano1.jpg"]);
+    //target = document.querySelector("#pano2");
+    //loadRoutes(target, routes["pano2.jpg"]);
+    //target = document.querySelector("#pano3");
+    //loadRoutes(target, routes["pano3.jpg"]);
+});
+
+var currentRoute = {"label": "","color": "white", "x":[],"y":[]},
+    currentHolds = [];
+function resetRoutes() {
+    currentHolds.forEach((hold) => hold.remove());
+
+    currentRoute = {"label": "","color": "white", "x":[],"y":[]};
+    currentHolds = [];
+    document.querySelector("#currentRouteJSON").innerText = "";
+}
+
+// Listen for new routes
+document.querySelectorAll(".target").forEach((elem) => {
+    elem.addEventListener('click', (evt) => {
+        const bounds = evt.target.getBoundingClientRect(),
+            img = evt.currentTarget.querySelector("img"),
+            x = (evt.clientX - bounds.left)/img.width,
+            y = (evt.clientY - bounds.top)/img.height;
+        var hold = addHold(evt.currentTarget, x, y, currentRoute);
+        currentHolds.push(hold);
+        currentRoute.x.push(x);
+        currentRoute.y.push(y);
+        document.querySelector("#currentRouteJSON").innerText = JSON.stringify(currentRoute, null, 4);
+    })
+});
+
+        </script>
+    </body>
+</html>
