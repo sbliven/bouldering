@@ -7,11 +7,23 @@
 function addHold(target, x, y, properties) {
     const targetBounds = target.querySelector("img").getBoundingClientRect();
 
-    var xcoord = x*targetBounds.width - 12,
-        ycoord = y*targetBounds.height - 12;
-    if(xcoord <= -12) {
-        console.log(`coord: ${xcoord},${ycoord}`);
+    var width = targetBounds.width,
+        height = targetBounds.height;
+
+    // On page load, the target may not be sized yet, but it should have a child image
+    if(width <= 0) {
+        var img = target.querySelector("img");
+        width = img.width;
+        console.log(`bounds: ${targetBounds.width}, img: ${img.width}`);
     }
+    if(height <= 0) {
+        var img = target.querySelector("img");
+        height = img.height;
+        console.log(`bounds: ${targetBounds.height}, img: ${img.height}`);
+    }
+
+    var xcoord = x*width - 12,
+        ycoord = y*height - 12;
     var hold = document.createElement("div");
     hold.className = "hold";
     hold.style.left = xcoord + "px";
@@ -129,4 +141,13 @@ function highlightRoute(routeMap, holdKey) {
 }
 function showAllRoutes(routeMap) {
     routeMap.querySelectorAll('.hold').forEach((d) => d.style.display="block");
+}
+
+function sortRoutes(routes) {
+    function byX(a, b) {
+        return a.x[0] - b.x[0];
+    }
+    for(key in routes) {
+        routes[key].sort(byX);
+    }
 }

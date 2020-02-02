@@ -4,18 +4,19 @@ body {
 }
 #content {
     margin-top: 20px;
-    width: 800px;
+    /*width: 800px;*/
     margin: auto;
     overflow:auto;
 }
 #content img {
-    /*max-width: 100%;*/
-    height: 600px;
+    max-width: 100%;
+    /*height: 500px;*/
 }
 
 .target {
     position: relative;
     overflow: auto;
+    display: block;
 }
 .target img {
     display:block;
