@@ -2,7 +2,8 @@
  *
  * target (HTMLElement): target div
  * x,y (float): fractional (0 to 1) position of the hold within the image
- * properties: dictionary with other optional properties
+ * properties: dictionary with other optional properties.
+ *   label, color, key, position ("start"|"mid"|"end")
  */
 function addHold(target, x, y, properties) {
     const targetBounds = target.querySelector("img").getBoundingClientRect();
@@ -29,6 +30,10 @@ function addHold(target, x, y, properties) {
     hold.style.left = xcoord + "px";
     hold.style.top = ycoord + "px";
 
+    if("position" in properties) {
+        hold.classList.add(properties.position+"Hold");
+    }
+
     var holdContent = document.createElement("div")
     holdContent.className = "holdLabel";
     if("label" in properties) {
@@ -52,21 +57,24 @@ function addHold(target, x, y, properties) {
     return hold;
 }
 
-function loadRoutes(target, key, routes) {
-    console.log("Loaded "+routes.length+" routes")
-    // first, assign unique key to each route
-    for(var i = 0; i<routes.length; i++) {
-        routes[i]["key"] = "route"+i;
-    }
-    routes.forEach((route) => {
+function loadRoutes(target, routes, imageKey) {
+    const positions = routes.images[imageKey];
+
+    Object.keys(positions).forEach((routeKey) => {
+        const route = positions[routeKey];
         for(var i=0;i<route.x.length; i++) {
-            properties = {}
-            Object.assign(properties, route);
-            if( ("includeStart" in properties && !properties.includeStart && i ==0) ||
-                (0 < i && i < route.x.length-1) ||
-                ("includeEnd" in properties && !properties.includeEnd && i == route.x.length-1)) {
-                // only label endpoints
-                delete properties['label'];
+            properties = {
+                "key": routeKey
+            }
+            if(routeKey in routes.labels) properties.label = routes.labels[routeKey];
+            if(routeKey in routes.colors) properties.color = routes.colors[routeKey];
+            if(routeKey in routes.ratings) properties.rating = routes.ratings[routeKey];
+            if(i == 0 && (!("includeStart" in properties) || properties.includeStart) ) {
+                properties.position = "start";
+            } else if(i == route.x.length-1 && (!("includeEnd" in properties) || properties.includeEnd) ) {
+                properties.position = "end";
+            } else {
+                properties.position = "mid";
             }
             addHold(target, route.x[i], route.y[i], properties);
         }
@@ -110,7 +118,7 @@ function luma(color) // color can be a hx string or an array of RGB values 0-255
     return (0.2126 * rgb[0]) + (0.7152 * rgb[1]) + (0.0722 * rgb[2]); // SMPTE C, Rec. 709 weightings
 }
 
-function addLegend(map, routes) {
+function addLegend(map, routes, imageKey) {
     const legend = document.createElement("div");
     legend.className = "legend";
 
@@ -120,24 +128,27 @@ function addLegend(map, routes) {
     allBlock.addEventListener("click", () => toggleAllRoutes(map));
     legend.appendChild(allBlock);
 
-    routes.forEach((properties) => {
+    const imageRoutes = routes.images[imageKey];
+    sortRoutes(routes, imageKey).forEach((routeKey) => {
+        const route = imageRoutes[routeKey];
+
         const block = document.createElement("div");
         block.className = "legendBlock";
-        block.setAttribute("data-key", properties.key);
+        block.setAttribute("data-key", routeKey);
 
-        if("label" in properties) {
-            block.innerText = properties.label;
+        if(routeKey in routes.labels) {
+            block.innerText = routes.labels[routeKey];
         }
 
-        if("color" in properties) {
-            block.style.backgroundColor = properties.color;
-            block.style.color = contrastingColor(properties.color);
+        if(routeKey in routes.colors) {
+            block.style.backgroundColor = routes.colors[routeKey];
+            block.style.color = contrastingColor(routes.colors[routeKey]);
         }
 
-        block.addEventListener("mouseover", () => hoverRoute(map, properties.key));
-        block.addEventListener("mouseout", () => unhoverRoute(map, properties.key));
+        block.addEventListener("mouseover", () => hoverRoute(map, routeKey));
+        block.addEventListener("mouseout", () => unhoverRoute(map, routeKey));
 
-        block.addEventListener("click", () => toggleRoute(map, properties.key));
+        block.addEventListener("click", () => toggleRoute(map, routeKey));
 
         legend.appendChild(block);
     });
@@ -145,7 +156,6 @@ function addLegend(map, routes) {
 }
 
 function hoverRoute(routeMap, holdKey) {
-    console.log(`hover ${holdKey}`);
     routeMap.querySelectorAll(`.hold[data-key="${holdKey}"]`).forEach((d) => {
         d.classList.add("hover");
     });
@@ -155,7 +165,6 @@ function hoverRoute(routeMap, holdKey) {
 }
 
 function unhoverRoute(routeMap, holdKey) {
-    console.log(`unhover ${holdKey}`);
     routeMap.querySelectorAll(`.hold[data-key="${holdKey}"]`).forEach((d) => {
         d.classList.remove("hover");
     });
@@ -221,11 +230,14 @@ function toggleRoute(routeMap, holdKey) {
     }
 }
 
-function sortRoutes(routes) {
+/* Enumerates route keys from a particular image */
+function sortRoutes(routes, imageKey) {
+    const imagePos = routes.images[imageKey];
     function byX(a, b) {
-        return a.x[0] - b.x[0];
+        //return imagePos[a].x[0] - imagePos[b].x[0];
+        return Math.min.apply(null, imagePos[a].x) - Math.min.apply(null, imagePos[b].x);
     }
-    for(key in routes) {
-        routes[key].sort(byX);
-    }
+    const keys = Object.keys(imagePos);
+    keys.sort(byX);
+    return keys;
 }

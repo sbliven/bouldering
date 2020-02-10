@@ -44,8 +44,8 @@ window.addEventListener("load", () => {
     document.querySelectorAll(".routeMap").forEach( (map) => {
         target = map.querySelector(".target");
         key = target.getAttribute("data-key");
-        loadRoutes(target, key, routes[key]);
-        addLegend(map, routes[key]);
+        loadRoutes(target, routes, key);
+        addLegend(map, routes, key);
     });
 });
         </script>
