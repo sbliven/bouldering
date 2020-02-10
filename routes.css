@@ -4,7 +4,7 @@ body {
 }
 #content {
     margin-top: 20px;
-    /*width: 800px;*/
+    width: 800px;
     margin: auto;
     overflow:auto;
 }
@@ -29,8 +29,14 @@ body {
     height: 24px;
     top: 0px;
     left: 0px;
-    border: solid 1px black;
+    border: none;
     border-radius: 12px;
+    opacity: 0;
+}
+.hold.active, .hold.hover {
+    border: solid 1px black;
+    color: black;
+    opacity: 1;
 }
 
 .hold > .holdLabel {
@@ -57,13 +63,30 @@ body {
 
 .legend {
     margin-bottom: 10px;
+    vertical-align: center;
 }
+
 .legendBlock {
     display: inline-block;
     padding: 4px;
-    width: 1em;
+    width: 1.5em;
     height: 1em;
     text-align: center;
     vertical-align: top;
+
+    margin: 3px;
+    border-radius: 2px;
+    /* changed in javascript */
+    border: solid white 1px;
+    background: white;
+    color: black;
 }
 
+.legendBlock.active {
+    border-width: 3px;
+    margin: 1px;
+}
+
+.legendBlock.hover {
+    border-color: #ccc;
+}

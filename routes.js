@@ -44,8 +44,8 @@ function addHold(target, x, y, properties) {
 
     if("key" in properties) {
         hold.setAttribute("data-key", properties["key"]);
-        hold.addEventListener("mouseover", () => highlightRoute(target, properties.key));
-        hold.addEventListener("mouseout", () => showAllRoutes(target));
+        hold.addEventListener("mouseover", () => hoverRoute(target, properties.key));
+        hold.addEventListener("mouseout", () => unhoverRoute(target, properties.key));
     }
 
     target.appendChild(hold);
@@ -111,11 +111,19 @@ function luma(color) // color can be a hx string or an array of RGB values 0-255
 }
 
 function addLegend(map, routes) {
-    legend = document.createElement("div");
+    const legend = document.createElement("div");
     legend.className = "legend";
+
+    const allBlock = document.createElement("div");
+    allBlock.className = "legendBlock allBlock";
+    allBlock.innerText = "All";
+    allBlock.addEventListener("click", () => toggleAllRoutes(map));
+    legend.appendChild(allBlock);
+
     routes.forEach((properties) => {
-        block = document.createElement("div");
+        const block = document.createElement("div");
         block.className = "legendBlock";
+        block.setAttribute("data-key", properties.key);
 
         if("label" in properties) {
             block.innerText = properties.label;
@@ -126,21 +134,91 @@ function addLegend(map, routes) {
             block.style.color = contrastingColor(properties.color);
         }
 
-        block.addEventListener("mouseover", () => highlightRoute(map, properties.key));
-        block.addEventListener("mouseout", () => showAllRoutes(map));
+        block.addEventListener("mouseover", () => hoverRoute(map, properties.key));
+        block.addEventListener("mouseout", () => unhoverRoute(map, properties.key));
+
+        block.addEventListener("click", () => toggleRoute(map, properties.key));
+
         legend.appendChild(block);
     });
     map.appendChild(legend);
 }
 
-function highlightRoute(routeMap, holdKey) {
-    // disable other routes
-    routeMap.querySelectorAll('.hold').forEach((d) => d.style.display="none");
-    // show desired route
-    routeMap.querySelectorAll('.hold[data-key="'+ holdKey + '"]').forEach((d) => d.style.display="block");
+function hoverRoute(routeMap, holdKey) {
+    console.log(`hover ${holdKey}`);
+    routeMap.querySelectorAll(`.hold[data-key="${holdKey}"]`).forEach((d) => {
+        d.classList.add("hover");
+    });
+    routeMap.querySelectorAll(`.legendBlock[data-key="${holdKey}"]`).forEach((d) => {
+        d.classList.add("hover");
+    });
 }
-function showAllRoutes(routeMap) {
-    routeMap.querySelectorAll('.hold').forEach((d) => d.style.display="block");
+
+function unhoverRoute(routeMap, holdKey) {
+    console.log(`unhover ${holdKey}`);
+    routeMap.querySelectorAll(`.hold[data-key="${holdKey}"]`).forEach((d) => {
+        d.classList.remove("hover");
+    });
+    routeMap.querySelectorAll(`.legendBlock[data-key="${holdKey}"]`).forEach((d) => {
+        d.classList.remove("hover");
+    });
+}
+
+function setAllRoutes(routeMap) {
+    routeMap.querySelectorAll('.hold').forEach((d) => {
+        d.classList.add("active")
+    });
+    routeMap.querySelectorAll('.legendBlock').forEach((d) => {
+        d.classList.add("active")
+    });
+
+}
+function resetRoutes(routeMap) {
+    routeMap.querySelectorAll('.hold').forEach((d) => {
+        d.classList.remove("active")
+        d.classList.remove("hover")
+    });
+    routeMap.querySelectorAll('.legendBlock').forEach((d) => {
+        d.classList.remove("active")
+        d.classList.remove("hover")
+    });
+}
+
+/* Respond to 'All' button clicks.
+ * If all are active, deactivate everything.
+ * If not all are active, activate everything.
+ */
+function toggleAllRoutes(routeMap) {
+    const allBlock = routeMap.querySelector('.allBlock'),
+        active = allBlock.classList.contains("active");
+    if(active) {
+        allBlock.classList.remove("active");
+        routeMap.querySelectorAll('.hold, .legendBlock').forEach((h) => {
+            h.classList.remove("active");
+        });
+    } else {
+        allBlock.classList.add("active");
+        routeMap.querySelectorAll('.hold, .legendBlock').forEach((h) => {
+            h.classList.add("active");
+        });
+    }
+}
+
+function toggleRoute(routeMap, holdKey) {
+    const legend = routeMap.querySelector(`.legendBlock[data-key="${holdKey}"]`),
+        active = legend.classList.contains("active");
+    if(active) {
+        legend.classList.remove("active");
+        routeMap.querySelectorAll(`.hold[data-key="${holdKey}"]`).forEach((h) => {
+            h.classList.remove("active");
+        });
+        routeMap.querySelector(".allBlock").classList.remove("active");
+    } else {
+        legend.classList.add("active");
+        routeMap.querySelectorAll(`.hold[data-key="${holdKey}"]`).forEach((h) => {
+            h.classList.add("active");
+        });
+    }
 }
 
 function sortRoutes(routes) {
