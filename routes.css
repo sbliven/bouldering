@@ -9,8 +9,8 @@ body {
     overflow:auto;
 }
 #content img {
-    max-width: 100%;
-    /*height: 500px;*/
+    /*max-width: 100%;*/
+    height: 500px;
 }
 
 .target {
@@ -34,11 +34,16 @@ body {
     opacity: 0;
 }
 .hold.active, .hold.hover {
-    border: solid 1px black;
-    color: black;
+    border: solid 1px white;
+    color: white;
     opacity: 1;
 }
-
+.hold.startHold {
+    border-width: 2px;
+}
+.hold.midHold {
+    border-style: dotted;
+}
 .hold > .holdLabel {
 
     margin: 0;

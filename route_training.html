@@ -52,8 +52,8 @@ window.addEventListener("load", () => {
     document.querySelectorAll(".routeMap").forEach( (map) => {
         target = map.querySelector(".target");
         key = target.getAttribute("data-key");
-        loadRoutes(target, key, routes[key]);
-        addLegend(map, routes[key]);
+        loadRoutes(target, routes, key);
+        addLegend(map, routes, key);
     });
 //    var target = document.querySelector("#pano1");
     //loadRoutes(target, routes["pano1.jpg"]);
@@ -63,12 +63,12 @@ window.addEventListener("load", () => {
     //loadRoutes(target, routes["pano3.jpg"]);
 });
 
-var currentRoute = {"label": "","color": "white", "x":[],"y":[]},
+var currentRoute = {"x":[],"y":[]},
     currentHolds = [];
 function resetRoutes() {
     currentHolds.forEach((hold) => hold.remove());
 
-    currentRoute = {"label": "","color": "white", "x":[],"y":[]};
+    currentRoute = {"x":[],"y":[]};
     currentHolds = [];
     document.querySelector("#currentRouteJSON").innerText = "";
 }
@@ -79,8 +79,10 @@ document.querySelectorAll(".target").forEach((elem) => {
         const bounds = evt.target.getBoundingClientRect(),
             img = evt.currentTarget.querySelector("img"),
             x = (evt.clientX - bounds.left)/img.width,
-            y = (evt.clientY - bounds.top)/img.height;
-        var hold = addHold(evt.currentTarget, x, y, currentRoute);
+            y = (evt.clientY - bounds.top)/img.height,
+            properties = { };
+        var hold = addHold(evt.currentTarget, x, y, properties);
+        hold.classList.add("active");
         currentHolds.push(hold);
         currentRoute.x.push(x);
         currentRoute.y.push(y);

@@ -22,13 +22,18 @@ function addHold(target, x, y, properties) {
         height = img.height;
         console.log(`bounds: ${targetBounds.height}, img: ${img.height}`);
     }
+    const relSize = "size" in properties ? properties.size : 0.08,
+        size = relSize * height;
 
-    var xcoord = x*width - 12,
-        ycoord = y*height - 12;
+    var xcoord = x*width - size/2,
+        ycoord = y*height - size/2;
     var hold = document.createElement("div");
     hold.className = "hold";
     hold.style.left = xcoord + "px";
     hold.style.top = ycoord + "px";
+    hold.style.width = size + "px";
+    hold.style.height = size + "px";
+    hold.style.borderRadius = size/2 + "px";
 
     if("position" in properties) {
         hold.classList.add(properties.position+"Hold");
@@ -66,12 +71,19 @@ function loadRoutes(target, routes, imageKey) {
             properties = {
                 "key": routeKey
             }
-            if(routeKey in routes.labels) properties.label = routes.labels[routeKey];
+            if(routeKey in routes.labels)
+                properties.label = routes.labels[routeKey];
+            else
+                properties.label = routeKey;
             if(routeKey in routes.colors) properties.color = routes.colors[routeKey];
             if(routeKey in routes.ratings) properties.rating = routes.ratings[routeKey];
-            if(i == 0 && (!("includeStart" in properties) || properties.includeStart) ) {
+            if(imageKey in routes.sizes) properties.size = routes.sizes[imageKey];
+            if("includeStart" in route) properties.includeStart = route.includeStart;
+            if("includeEnd" in route) properties.includeEnd = route.includeEnd;
+
+            if(i == 0 && (!("includeStart" in route) || route.includeStart) ) {
                 properties.position = "start";
-            } else if(i == route.x.length-1 && (!("includeEnd" in properties) || properties.includeEnd) ) {
+            } else if(i == route.x.length-1 && (!("includeEnd" in route) || route.includeEnd) ) {
                 properties.position = "end";
             } else {
                 properties.position = "mid";
@@ -138,6 +150,8 @@ function addLegend(map, routes, imageKey) {
 
         if(routeKey in routes.labels) {
             block.innerText = routes.labels[routeKey];
+        }else {
+            block.innerText = routeKey;
         }
 
         if(routeKey in routes.colors) {
@@ -234,8 +248,8 @@ function toggleRoute(routeMap, holdKey) {
 function sortRoutes(routes, imageKey) {
     const imagePos = routes.images[imageKey];
     function byX(a, b) {
-        //return imagePos[a].x[0] - imagePos[b].x[0];
-        return Math.min.apply(null, imagePos[a].x) - Math.min.apply(null, imagePos[b].x);
+        return imagePos[a].x[0] - imagePos[b].x[0];
+        //return Math.min.apply(null, imagePos[a].x) - Math.min.apply(null, imagePos[b].x);
     }
     const keys = Object.keys(imagePos);
     keys.sort(byX);
