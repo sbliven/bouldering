@@ -2,6 +2,13 @@ body {
     background: #222;
     color: #f1db9d;
 }
+a {
+    color: #fff;
+}
+a:hover {
+    color: #ccc;
+}
+
 #content {
     margin-top: 20px;
     width: 800px;
